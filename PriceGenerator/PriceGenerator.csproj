@@ -13,8 +13,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0"/>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0"/>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2"/>
+    <PackageReference Include="kafka-net" Version="0.9.0.65"/>
   </ItemGroup>
   <ItemGroup>
-   <None Include="appsettings.json" CopyToPublishDirectory="Always" />
-</ItemGroup>
+    <None Include="appsettings.json" CopyToPublishDirectory="Always"/>
+  </ItemGroup>
 </Project>

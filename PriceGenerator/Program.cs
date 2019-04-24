@@ -24,6 +24,7 @@ namespace PriceGenerator
                     services.AddLogging();
                     services.AddTransient<StockService>();
                     services.AddSingleton<StockPriceManager>();
+                    services.AddTransient<MessagePublisherService>();
                     services.AddHostedService<ApplicationService>();
                 })
                 .ConfigureLogging((HostBuilderContext hc, ILoggingBuilder logConfig) =>
