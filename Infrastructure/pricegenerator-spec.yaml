@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-demo
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: price-generator
+  namespace: kube-demo
+spec:
+  containers:
+    - name: pricegenerator-container
+      image: xximjasonxx/kubedemo-pricegenerator:v2
