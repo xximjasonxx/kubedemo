@@ -3,37 +3,82 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using KafkaNet.Protocol;
 using System;
-using KafkaNet.Model;
-using KafkaNet;
+using RabbitMQ.Client;
+using Microsoft.Extensions.Configuration;
+using System.Text;
 
 namespace PriceGenerator.Services
 {
     public class MessagePublisherService
     {
-        public async Task PublishPriceChanges(IDictionary<string, decimal> stockPriceData)
+        private readonly string _rabbitMqUsername;
+        private readonly string _rabbitMqPassword;
+        private readonly string _rabbitMqHostname;
+        private readonly string _rabbitMqPort;
+        private readonly string _rabbitMqQueueName;
+
+        public MessagePublisherService(IConfiguration configuration)
         {
-            await Task.WhenAll(
-                stockPriceData.Select(x => PublishPriceChange(x.Key, x.Value))
-            );
+            var authSection = configuration.GetSection("RabbitMqAuth");
+            _rabbitMqUsername = authSection.GetValue<string>("username");
+            _rabbitMqPassword = authSection.GetValue<string>("password");
+
+            var connectSection = configuration.GetSection("RabbitMqConnect");
+            _rabbitMqHostname = connectSection.GetValue<string>("hostname");
+            _rabbitMqPort = connectSection.GetValue<string>("port");
+
+            _rabbitMqQueueName = configuration.GetValue<string>("RabbitMqQueueName");
         }
 
-        async Task PublishPriceChange(string symbol, decimal value)
+        public Task PublishPriceChanges(IDictionary<string, decimal> stockPriceData)
+        {
+            using (var rabbitConnection = BuildConnection())
+            {
+                using (var channel = rabbitConnection.CreateModel())
+                {
+                    channel.QueueDeclare(_rabbitMqQueueName,
+                        durable: false,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null);
+
+                    Parallel.ForEach(stockPriceData, (stockPrice) =>
+                    {
+                        PublishPriceChange(stockPrice.Key, stockPrice.Value, channel);
+                    });
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        void PublishPriceChange(string symbol, decimal value, IModel channel)
         {
             var payload = new JObject(
                 new JProperty("symbol", symbol),
                 new JProperty("newPrice", value.ToString())
             );
+            
+            var messagePayload = payload.ToString();
+            var message = Encoding.UTF8.GetBytes(messagePayload);
+            channel.BasicPublish(exchange: string.Empty,
+                routingKey: _rabbitMqQueueName,
+                basicProperties: null,
+                body: message);
 
-            var messagePayload = new Message(payload.ToString());
-            var kafkaUrl = new Uri("http://localhost:9092");
-            var options = new KafkaOptions(kafkaUrl);
+            Console.WriteLine("Successfully wrote to the queue");
+        }
 
-            var router = new BrokerRouter(options);
-            var client = new Producer(router);
-            var rawResponse = await client.SendMessageAsync("PriceChange", new[] { messagePayload });
-            return;
+        IConnection BuildConnection()
+        {
+            var uriString = $"amqp://{_rabbitMqUsername}:{_rabbitMqPassword}@{_rabbitMqHostname}:{_rabbitMqPort}";
+            Console.WriteLine(uriString);
+
+            var factory = new ConnectionFactory();
+            factory.Uri = new Uri(uriString);
+
+            return factory.CreateConnection();
         }
     }
 }
