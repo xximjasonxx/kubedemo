@@ -37,10 +37,9 @@ namespace PriceGenerator.Services
             {
                 using (var channel = rabbitConnection.CreateModel())
                 {
-                    channel.ExchangeDeclare(_rabbitMqExchangeName,
-                        type: ExchangeType.Direct,
-                        durable: false,
-                        autoDelete: false);
+                    channel.ExchangeDeclare(
+                        exchange: _rabbitMqExchangeName,
+                        type: ExchangeType.Fanout);
 
                     Parallel.ForEach(stockPriceData, (stockPrice) =>
                     {
