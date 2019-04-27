@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StockApi.Hubs;
+using StockApi.Listeners;
 
 namespace StockApi
 {
@@ -29,7 +30,7 @@ namespace StockApi
             services.AddSignalR();
             services.AddCors();
 
-            services.AddHostedService<ListenerService>();
+            services.AddHostedService<PriceChangeListenerService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
