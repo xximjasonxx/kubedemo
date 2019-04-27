@@ -13,4 +13,4 @@ metadata:
 spec:
   containers:
     - name: pricegenerator-container
-      image: xximjasonxx/kubedemo-pricegenerator:v3
+      image: xximjasonxx/kubedemo-pricegenerator:v5
