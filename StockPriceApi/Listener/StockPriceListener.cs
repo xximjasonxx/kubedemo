@@ -25,14 +25,11 @@ namespace StockPriceApi.Listener
 
             var factory = new ConnectionFactory
             {
-                HostName = connectSection.GetValue<string>("hostname"),
-                Port = connectSection.GetValue<int>("port"),
+                HostName = connectSection.GetValue<string>("RabbitMQHost"),
+                Port = connectSection.GetValue<int>("RabbitMQPort"),
                 UserName = configSection.GetValue<string>("Username"),
                 Password = configSection.GetValue<string>("Password")
             };
-
-            Console.WriteLine($"Target Host: {configuration.GetValue<string>("RabbitMQHost")}");
-            Console.WriteLine($"Target Port: {configuration.GetValue<string>("RabbitMQPort")}");
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
