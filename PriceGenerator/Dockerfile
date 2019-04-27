@@ -9,4 +9,4 @@ FROM mcr.microsoft.com/dotnet/core/runtime:2.2 as runtime
 WORKDIR /app
 COPY --from=build /code/output ./
 
-ENTRYPOINT [ "dotnet", "PriceGenerator.dll" ]
+ENTRYPOINT [ "dotnet", "PriceGenerator.dll", "Cluster" ]

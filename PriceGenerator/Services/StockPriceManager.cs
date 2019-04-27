@@ -9,12 +9,14 @@ namespace PriceGenerator.Services
     public class StockPriceManager
     {
         private readonly ILogger _logger;
+        private readonly MessagePublisherService _messagePublisherService;
 
         private IDictionary<string, decimal> _stockPriceData;
 
-        public StockPriceManager(ILogger<StockPriceManager> logger)
+        public StockPriceManager(ILogger<StockPriceManager> logger, MessagePublisherService messagePublisherService)
         {
             _logger = logger;
+            _messagePublisherService = messagePublisherService;
         }
 
         public void Initialize(IDictionary<string, decimal> stockPriceData)
@@ -37,6 +39,8 @@ namespace PriceGenerator.Services
                 };
             })
             .ToDictionary(x => x.Symbol, x => x.Price + x.PriceChange);
+
+            _messagePublisherService.PublishPriceChanges(_stockPriceData).GetAwaiter().GetResult();
         }
     }
 }
