@@ -1,5 +1,6 @@
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -8,7 +9,7 @@ using RabbitMQ.Client.Events;
 
 namespace StockPriceApi.Listener
 {
-    public class StockPriceListener : IHostedService
+    public class StockPriceListener
     {
         private readonly string ExchangeName = "TheExchange";
 
@@ -16,42 +17,53 @@ namespace StockPriceApi.Listener
         private IModel _channel;
         private EventingBasicConsumer _consumer;
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public void Start()
         {
             _connection = BuildConnection();
             _channel = _connection.CreateModel();
 
             _channel.ExchangeDeclare(
                 exchange: ExchangeName,
-                type: ExchangeType.Direct
+                type: ExchangeType.Fanout
             );
 
             var queueName = _channel.QueueDeclare().QueueName;
             Console.WriteLine($"Queue: {queueName}");
+            _channel.QueueBind(
+                queue: queueName,
+                exchange: ExchangeName,
+                routingKey: string.Empty
+            );
 
             _consumer = new EventingBasicConsumer(_channel);
             _consumer.Received += HandleMessageReceive;
             _consumer.Registered += (obj, ev) => Console.WriteLine("Registered");
 
-            return Task.CompletedTask;
+            _channel.BasicConsume(
+                queue: queueName,
+                autoAck: true,
+                consumer: _consumer
+            );
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public void Stop()
         {
-            if (_consumer != null)
-            {
-                _consumer.Received -= HandleMessageReceive;
-            }
+            _consumer.Received -= HandleMessageReceive;
+            _consumer = null;
 
-            _channel?.Dispose();
-            _connection?.Dispose();
+            _channel.Close();
+            _channel.Dispose();
+            _channel = null;
 
-            return Task.CompletedTask;
+            _connection.Close();
+            _connection.Dispose();
+            _connection = null;
         }
 
         void HandleMessageReceive(object sender, BasicDeliverEventArgs e)
         {
-            Console.WriteLine("Message Received");
+            var bodyContents = Encoding.UTF8.GetString(e.Body);
+            Console.WriteLine($"Message Received: {bodyContents}");
         }
 
         IConnection BuildConnection()

@@ -26,12 +26,12 @@ namespace StockPriceApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHostedService<StockPriceListener>();
+            services.AddSingleton<StockPriceListener>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
             if (env.IsDevelopment())
             {
@@ -42,6 +42,13 @@ namespace StockPriceApi
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            ((StockPriceListener)app.ApplicationServices.GetService(typeof(StockPriceListener))).Start();
+            applicationLifetime.ApplicationStopping.Register(() =>
+            {
+                Console.WriteLine("Handle Shutdown");
+                ((StockPriceListener)app.ApplicationServices.GetService(typeof(StockPriceListener))).Stop();
+            });
 
             app.UseHttpsRedirection();
             app.UseMvc();
