@@ -16,7 +16,7 @@ namespace PriceGenerator.Services
         private readonly string _rabbitMqPassword;
         private readonly string _rabbitMqHostname;
         private readonly string _rabbitMqPort;
-        private readonly string _rabbitMqQueueName;
+        private readonly string _rabbitMqExchangeName;
 
         public MessagePublisherService(IConfiguration configuration)
         {
@@ -28,7 +28,7 @@ namespace PriceGenerator.Services
             _rabbitMqHostname = connectSection.GetValue<string>("hostname");
             _rabbitMqPort = connectSection.GetValue<string>("port");
 
-            _rabbitMqQueueName = configuration.GetValue<string>("RabbitMqQueueName");
+            _rabbitMqExchangeName = configuration.GetValue<string>("RabbitMqExchangeName");
         }
 
         public Task PublishPriceChanges(IDictionary<string, decimal> stockPriceData)
@@ -37,11 +37,10 @@ namespace PriceGenerator.Services
             {
                 using (var channel = rabbitConnection.CreateModel())
                 {
-                    channel.QueueDeclare(_rabbitMqQueueName,
+                    channel.ExchangeDeclare(_rabbitMqExchangeName,
+                        type: ExchangeType.Direct,
                         durable: false,
-                        exclusive: false,
-                        autoDelete: false,
-                        arguments: null);
+                        autoDelete: false);
 
                     Parallel.ForEach(stockPriceData, (stockPrice) =>
                     {
@@ -62,12 +61,12 @@ namespace PriceGenerator.Services
             
             var messagePayload = payload.ToString();
             var message = Encoding.UTF8.GetBytes(messagePayload);
-            channel.BasicPublish(exchange: string.Empty,
-                routingKey: _rabbitMqQueueName,
+            channel.BasicPublish(exchange: _rabbitMqExchangeName,
+                routingKey: string.Empty,
                 basicProperties: null,
                 body: message);
 
-            Console.WriteLine("Successfully wrote to the queue");
+            Console.WriteLine("Successfully wrote to the exchange");
         }
 
         IConnection BuildConnection()
