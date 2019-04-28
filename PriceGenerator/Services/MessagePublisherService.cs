@@ -43,7 +43,7 @@ namespace PriceGenerator.Services
 
                     Parallel.ForEach(stockPriceData, (stockPrice) =>
                     {
-                        PublishPriceChange(stockPrice.Key, stockPrice.Value, channel);
+                        PublishPriceChange(stockPrice.Key, stockPrice.Value, DateTime.UtcNow, channel);
                     });
                 }
             }
@@ -51,11 +51,12 @@ namespace PriceGenerator.Services
             return Task.CompletedTask;
         }
 
-        void PublishPriceChange(string symbol, decimal value, IModel channel)
+        void PublishPriceChange(string symbol, decimal value, DateTime publishTime, IModel channel)
         {
             var payload = new JObject(
                 new JProperty("symbol", symbol),
-                new JProperty("newPrice", value.ToString())
+                new JProperty("newPrice", value.ToString()),
+                new JProperty("publishTime", publishTime.ToString("HH:mm:ss"))
             );
             
             var messagePayload = payload.ToString();
@@ -65,7 +66,7 @@ namespace PriceGenerator.Services
                 basicProperties: null,
                 body: message);
 
-            Console.WriteLine("Successfully wrote to the exchange");
+            Console.WriteLine("Successfully wrote to the exchange - " + publishTime.ToString("HH:mm:ss"));
         }
 
         IConnection BuildConnection()

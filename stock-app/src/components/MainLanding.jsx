@@ -1,15 +1,22 @@
 
 import React from 'react';
-import { connect } from 'react-redux';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
+import {
+    LineChart,
+    Line,
+    CartesianGrid,
+    XAxis,
+    YAxis
+} from 'recharts';
 
-class MainLandingComponent extends React.Component {
+class MainLanding extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
             hubConnection: null,
-            stockPrices: {}
+            stockPrices: [],
+            stockSymbols: []
         };
 
         this.handleConnectionStart = this.handleConnectionStart.bind(this);
@@ -26,35 +33,42 @@ class MainLandingComponent extends React.Component {
                 .start()
                 .then(this.handleConnectionStart)
                 .catch(err => {
-                        console.log('Connection error: ' + err);
-                    });
+                    console.log('Connection error: ' + err);
+                });
         });
     }
 
     handleConnectionStart() {
         console.log("Connection established");
-        this.state.hubConnection.on('ReceiveStockPrice', (stockPrice) => {
+        this.state.hubConnection.on('ReceiveStockPrice', (stockPrice) => {            
+            var dataObject = {
+                symbol: stockPrice.symbol,
+                price: stockPrice.newPrice,
+                publishTime: stockPrice.publishTime };
             this.setState({
-                stockPrices: Object.assign({}, this.state.stockPrices, {
-                    [stockPrice.symbol]: stockPrice.newPrice
-                })
+                stockPrices: [ ...this.state.stockPrices, dataObject ],
+                stockSymbols: [ ...this.state.stockSymbols.filter(symbol => symbol !== stockPrice.symbol), stockPrice.symbol]
             });
         });
     }
 
     render() {
-        const { stockPrices } = this.state;
+        const { stockPrices, stockSymbols } = this.state;
+
         return (
             <div>
                 <h2>Stock Prices</h2>
-                {Object.keys(stockPrices).map((key) => <h3>{key} - {stockPrices[key]}</h3>)}
+                <LineChart width={400} height={400}>
+                    {stockSymbols.map(symbol => {
+                        return <Line type="monotone" dataKey="price" data={stockPrices.filter(x => x.symbol === symbol)} stroke="#8884d8" />
+                    })}
+                    <CartesianGrid stroke="#ccc" />
+                    <XAxis dataKey="publishTime" />
+                    <YAxis dataKey="price" />
+                </LineChart>
             </div>
         );
     }
 };
 
-const mapStateToProps = (state) => {
-    return {};
-};
-
-export default connect(mapStateToProps)(MainLandingComponent);
+export default MainLanding;
