@@ -8,7 +8,8 @@ class MainLandingComponent extends React.Component {
         super(props);
 
         this.state = {
-            hubConnection: null
+            hubConnection: null,
+            stockPrices: {}
         };
 
         this.handleConnectionStart = this.handleConnectionStart.bind(this);
@@ -33,13 +34,21 @@ class MainLandingComponent extends React.Component {
     handleConnectionStart() {
         console.log("Connection established");
         this.state.hubConnection.on('ReceiveStockPrice', (stockPrice) => {
-            console.log(stockPrice);
+            this.setState({
+                stockPrices: Object.assign({}, this.state.stockPrices, {
+                    [stockPrice.symbol]: stockPrice.newPrice
+                })
+            });
         });
     }
 
     render() {
+        const { stockPrices } = this.state;
         return (
-            <div>Hello World</div>
+            <div>
+                <h2>Stock Prices</h2>
+                {Object.keys(stockPrices).map((key) => <h3>{key} - {stockPrices[key]}</h3>)}
+            </div>
         );
     }
 };
