@@ -6,6 +6,6 @@ namespace StockPriceApi.Hubs
 {
     public interface IPriceChangeClient
     {
-        Task SendStockPriceAsync(StockPrice stockPrice);
+        Task ReceiveStockPrice(StockPrice stockPrice);
     }
 }
