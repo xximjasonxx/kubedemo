@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-demo
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stockapi-deployment
+  namespace: kube-demo
+  labels:
+    app: stockapi
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: stockapi
+      type: pod
+  template:
+    metadata:
+      labels:
+        app: stockapi
+        type: pod
+      namespace: kube-demo
+    spec:
+      containers:
+        - name: stockapi-container
+          image: xximjasonxx/kubedemo-stockapi:v1.2
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: stockapi-service
+  namespace: kube-demo
+spec:
+  selector:
+    app: stockapi
+    type: pod
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      nodePort: 31000
