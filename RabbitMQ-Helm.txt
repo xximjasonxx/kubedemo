@@ -1,0 +1,2 @@
+helm install --name rabbitmq --namespace rabbitmq --set rabbitmq.username=rabbit --set rabbitmq.password=rabbit --set service.type=NodePort --set service.nodePort=30046 --set podlabels=rabbitmq stable/rabbitmq
+
