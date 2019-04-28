@@ -20,4 +20,4 @@ spec:
     spec:
       containers:
         - name: pricegenerator-container
-          image: xximjasonxx/kubedemo-pricegenerator:v6.2
+          image: xximjasonxx/kubedemo-pricegenerator:v6.3

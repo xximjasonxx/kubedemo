@@ -29,7 +29,7 @@ namespace PriceGenerator.Services
             var randomPriceDifferenceGenerator = new Random(DateTime.Now.Second);
             _stockPriceData = _stockPriceData.Select(kv =>
             {
-                var priceChange = (decimal)randomPriceDifferenceGenerator.Next(-1000, 1000) / 100;
+                var priceChange = (decimal)randomPriceDifferenceGenerator.Next(-1000, 1000) / 1000;
                 _logger.LogInformation($"{kv.Key} [{kv.Value}] - Change: {priceChange}");
                 
                 return new {
