@@ -16,7 +16,7 @@ class MainLandingComponent extends React.Component {
 
     componentDidMount = () => {
         const hubConnection = new HubConnectionBuilder()
-            .withUrl("https://localhost:5001/prices")
+            .withUrl("http://192.168.99.100:31000/prices")
             .configureLogging(LogLevel.Information)
             .build();
 

@@ -55,9 +55,10 @@ namespace StockPriceApi
 
             app.UseCors(builder =>
             {
-                builder.WithOrigins("http://localhost:3000")
+                builder
                     .AllowAnyHeader()
                     .AllowAnyMethod()
+                    .SetIsOriginAllowed((host) => true) // workaround as AllowAnyOrigin does not work
                     .AllowCredentials();
             });
             app.UseSignalR(options =>
