@@ -29,7 +29,6 @@ namespace StockPriceApi
         {
             services.AddSingleton<StockPriceListener>();
             services.AddSignalR();
-            services.AddCors();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -54,7 +53,13 @@ namespace StockPriceApi
                 ((StockPriceListener)app.ApplicationServices.GetService(typeof(StockPriceListener))).Stop();
             });
 
-            app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+            app.UseCors(builder =>
+            {
+                builder.WithOrigins("http://localhost:3000")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
             app.UseSignalR(options =>
             {
                 options.MapHub<StockPriceHub>("/prices");
