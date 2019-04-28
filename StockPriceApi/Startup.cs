@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using StockPriceApi.Hubs;
 using StockPriceApi.Listener;
 
 namespace StockPriceApi
@@ -27,6 +28,8 @@ namespace StockPriceApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<StockPriceListener>();
+            services.AddSignalR();
+            services.AddCors();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -50,6 +53,11 @@ namespace StockPriceApi
                 ((StockPriceListener)app.ApplicationServices.GetService(typeof(StockPriceListener))).Stop();
             });
 
+            app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+            app.UseSignalR(options =>
+            {
+                options.MapHub<StockPriceHub>("/prices");
+            });
             app.UseHttpsRedirection();
             app.UseMvc();
         }
