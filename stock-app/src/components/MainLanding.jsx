@@ -1,10 +1,15 @@
 
 import React from 'react';
+import { connect } from 'react-redux';
 
-const MainLanding = () => {
+const MainLandingComponent = () => {
     return (
         <div>Hello World</div>
     );
 };
 
-export default MainLanding;
+const mapStateToProps = (state) => {
+    return {};
+};
+
+export default connect(mapStateToProps)(MainLandingComponent);
