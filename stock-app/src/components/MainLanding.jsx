@@ -8,6 +8,7 @@ import {
     XAxis,
     YAxis
 } from 'recharts';
+import randomColor from 'randomcolor';
 
 class MainLanding extends React.Component {
     constructor(props) {
@@ -16,7 +17,8 @@ class MainLanding extends React.Component {
         this.state = {
             hubConnection: null,
             stockPrices: [],
-            stockSymbols: []
+            stockSymbols: [],
+            lineColors: randomColor({ count: 100, hue: 'green' })
         };
 
         this.handleConnectionStart = this.handleConnectionStart.bind(this);
@@ -45,9 +47,15 @@ class MainLanding extends React.Component {
                 symbol: stockPrice.symbol,
                 price: stockPrice.newPrice,
                 publishTime: stockPrice.publishTime };
+
+            var symbols = this.state.stockSymbols;
+            if (symbols.filter(symbol => symbol === stockPrice.symbol).length === 0) {
+                symbols = [ ...symbols, { symbol: stockPrice.symbol, color: this.state.lineColors[symbols.length] }];
+            }
+
             this.setState({
                 stockPrices: [ ...this.state.stockPrices, dataObject ],
-                stockSymbols: [ ...this.state.stockSymbols.filter(symbol => symbol !== stockPrice.symbol), stockPrice.symbol]
+                stockSymbols: symbols
             });
         });
     }
@@ -59,8 +67,8 @@ class MainLanding extends React.Component {
             <div>
                 <h2>Stock Prices</h2>
                 <LineChart width={400} height={400}>
-                    {stockSymbols.map(symbol => {
-                        return <Line type="monotone" dataKey="price" data={stockPrices.filter(x => x.symbol === symbol)} stroke="#8884d8" />
+                    {stockSymbols.map(symObj => {
+                        return <Line type="monotone" dataKey="price" data={stockPrices.filter(x => x.symbol === symObj.symbol)} stroke={symObj.color} />
                     })}
                     <CartesianGrid stroke="#ccc" />
                     <XAxis dataKey="publishTime" />
