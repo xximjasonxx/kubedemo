@@ -10,6 +10,8 @@ class MainLandingComponent extends React.Component {
         this.state = {
             hubConnection: null
         };
+
+        this.handleConnectionStart = this.handleConnectionStart.bind(this);
     }
 
     componentDidMount = () => {
@@ -21,10 +23,17 @@ class MainLandingComponent extends React.Component {
         this.setState({ hubConnection }, () => {
             this.state.hubConnection
                 .start()
-                .then(() => console.log('Connection established'))
+                .then(this.handleConnectionStart)
                 .catch(err => {
                         console.log('Connection error: ' + err);
                     });
+        });
+    }
+
+    handleConnectionStart() {
+        console.log("Connection established");
+        this.state.hubConnection.on('ReceiveStockPrice', (stockPrice) => {
+            console.log(stockPrice);
         });
     }
 
