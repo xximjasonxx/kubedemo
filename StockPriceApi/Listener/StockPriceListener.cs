@@ -3,22 +3,27 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using StockPriceApi.Hubs;
+using StockPriceApi.Models;
 
 namespace StockPriceApi.Listener
 {
     public class StockPriceListener
     {
+        private readonly IHubContext<StockPriceHub> _stockPriceHub;
         private readonly string _exchangeName;
 
         private readonly IConnection _connection;
         private readonly IModel _channel;
         private EventingBasicConsumer _consumer;
 
-        public StockPriceListener(IConfiguration configuration)
+        public StockPriceListener(IConfiguration configuration, IHubContext<StockPriceHub> hubContext)
         {
             var configSection = configuration.GetSection("RabbitMQ");
             var connectSection = configuration.GetSection("ExchangeConnection");
@@ -34,6 +39,8 @@ namespace StockPriceApi.Listener
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
             _exchangeName = configSection.GetValue<string>("ExchangeName");
+
+            _stockPriceHub = hubContext;
         }
 
         public void Start()
@@ -77,7 +84,13 @@ namespace StockPriceApi.Listener
         void HandleMessageReceive(object sender, BasicDeliverEventArgs e)
         {
             var bodyContents = Encoding.UTF8.GetString(e.Body);
-            Console.WriteLine($"Message Received: {bodyContents}");
+            var stockPrice = JsonConvert.DeserializeObject<StockPrice>(bodyContents);
+
+            _stockPriceHub.Clients.All.SendAsync(nameof(IPriceChangeClient.SendStockPriceAsync), stockPrice)
+                .GetAwaiter()
+                .GetResult();
+
+            Console.WriteLine("Sent price change to all clients");
         }
     }
 }
