@@ -27,13 +27,22 @@ namespace StockPriceApi.Listener
         {
             var configSection = configuration.GetSection("RabbitMQ");
             var connectSection = configuration.GetSection("ExchangeConnection");
+            var hostname = connectSection.GetValue<string>("RabbitMQHost");
+            var port = connectSection.GetValue<int>("RabbitMQPort");
+            var username = configSection.GetValue<string>("Username");
+            var password = configSection.GetValue<string>("Password");
+
+            Console.WriteLine($"Username: {username}");
+            Console.WriteLine($"Password: {password}");
+            Console.WriteLine($"Hostname: {hostname}");
+            Console.WriteLine($"Port: {port}");
 
             var factory = new ConnectionFactory
             {
-                HostName = connectSection.GetValue<string>("RabbitMQHost"),
-                Port = connectSection.GetValue<int>("RabbitMQPort"),
-                UserName = configSection.GetValue<string>("Username"),
-                Password = configSection.GetValue<string>("Password")
+                HostName = hostname,
+                Port = port,
+                UserName = username,
+                Password = password
             };
 
             _connection = factory.CreateConnection();
