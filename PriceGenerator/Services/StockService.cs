@@ -27,14 +27,14 @@ namespace PriceGenerator.Services
             _logger = logger;
         }
 
-        public async Task<IDictionary<string, decimal>> GetInitialStockData()
+        public async Task<ICollection<Stock>> GetInitialStockData()
         {
             var stockResults = await Task.WhenAll(
                 _stockSymbols.Select(symbol => GetSymbolPrice(symbol))
             );
 
             _logger.LogInformation("Got initial prices");
-            return stockResults.ToDictionary(x => x.Symbol, x => x.StockPrice);
+            return stockResults.ToList();
         }
 
         async Task<Stock> GetSymbolPrice(string symbol)

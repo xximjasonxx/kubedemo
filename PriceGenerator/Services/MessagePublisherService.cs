@@ -7,6 +7,8 @@ using System;
 using RabbitMQ.Client;
 using Microsoft.Extensions.Configuration;
 using System.Text;
+using PriceGenerator.Models;
+using Newtonsoft.Json;
 
 namespace PriceGenerator.Services
 {
@@ -31,7 +33,7 @@ namespace PriceGenerator.Services
             _rabbitMqExchangeName = configuration.GetValue<string>("RabbitMqExchangeName");
         }
 
-        public Task PublishPriceChanges(IDictionary<string, decimal> stockPriceData)
+        public Task PublishPriceChanges(ICollection<StockPriceChange> priceChanges)
         {
             using (var rabbitConnection = BuildConnection())
             {
@@ -41,9 +43,9 @@ namespace PriceGenerator.Services
                         exchange: _rabbitMqExchangeName,
                         type: ExchangeType.Fanout);
 
-                    Parallel.ForEach(stockPriceData, (stockPrice) =>
+                    Parallel.ForEach(priceChanges, (priceChange) =>
                     {
-                        PublishPriceChange(stockPrice.Key, stockPrice.Value, DateTime.UtcNow, channel);
+                        PublishPriceChange(priceChange, channel);
                     });
                 }
             }
@@ -51,22 +53,16 @@ namespace PriceGenerator.Services
             return Task.CompletedTask;
         }
 
-        void PublishPriceChange(string symbol, decimal value, DateTime publishTime, IModel channel)
+        void PublishPriceChange(StockPriceChange priceChange, IModel channel)
         {
-            var payload = new JObject(
-                new JProperty("symbol", symbol),
-                new JProperty("newPrice", value.ToString()),
-                new JProperty("publishTime", publishTime.ToString("HH:mm:ss"))
-            );
-            
-            var messagePayload = payload.ToString();
+            var messagePayload = JsonConvert.SerializeObject(priceChange);
             var message = Encoding.UTF8.GetBytes(messagePayload);
             channel.BasicPublish(exchange: _rabbitMqExchangeName,
                 routingKey: string.Empty,
                 basicProperties: null,
                 body: message);
 
-            Console.WriteLine("Successfully wrote to the exchange - " + publishTime.ToString("HH:mm:ss"));
+            Console.WriteLine("Successfully wrote to the exchange - " + priceChange.PublishTime.ToString("HH:mm:ss"));
         }
 
         IConnection BuildConnection()

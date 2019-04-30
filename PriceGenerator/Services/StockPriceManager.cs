@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using PriceGenerator.Models;
 
 namespace PriceGenerator.Services
 {
@@ -11,7 +12,7 @@ namespace PriceGenerator.Services
         private readonly ILogger _logger;
         private readonly MessagePublisherService _messagePublisherService;
 
-        private IDictionary<string, decimal> _stockPriceData;
+        private IDictionary<string, Stock> _stockPriceData;
 
         public StockPriceManager(ILogger<StockPriceManager> logger, MessagePublisherService messagePublisherService)
         {
@@ -19,28 +20,36 @@ namespace PriceGenerator.Services
             _messagePublisherService = messagePublisherService;
         }
 
-        public void Initialize(IDictionary<string, decimal> stockPriceData)
+        public void Initialize(ICollection<Stock> startingPriceData)
         {
-            _stockPriceData = stockPriceData;
+            _stockPriceData = startingPriceData.ToDictionary(x => x.Symbol, x => x);
         }
 
         public void SendPriceChanges()
         {
             var randomPriceDifferenceGenerator = new Random(DateTime.Now.Second);
-            _stockPriceData = _stockPriceData.Select(kv =>
+            var updatedPrices = _stockPriceData.Select(kv =>
             {
                 var priceChange = (decimal)randomPriceDifferenceGenerator.Next(-1000, 1000) / 1000;
-                _logger.LogInformation($"{kv.Key} [{kv.Value}] - Change: {priceChange}");
-                
-                return new {
+                return new StockPriceChange
+                {
                     Symbol = kv.Key,
-                    Price = kv.Value,
-                    PriceChange = priceChange
+                    NewPrice = kv.Value.StockPrice + priceChange,
+                    PriceChange = priceChange,
+                    PublishTime = DateTime.UtcNow
                 };
-            })
-            .ToDictionary(x => x.Symbol, x => x.Price + x.PriceChange);
+            }).ToList();
+            
+            _messagePublisherService.PublishPriceChanges(updatedPrices).GetAwaiter().GetResult();
+            UpdateLocalPrices(updatedPrices);
+        }
 
-            _messagePublisherService.PublishPriceChanges(_stockPriceData).GetAwaiter().GetResult();
+        void UpdateLocalPrices(ICollection<StockPriceChange> priceChanges)
+        {
+            foreach (var priceChange in priceChanges)
+            {
+                _stockPriceData[priceChange.Symbol].StockPrice = priceChange.NewPrice;
+            }
         }
     }
 }

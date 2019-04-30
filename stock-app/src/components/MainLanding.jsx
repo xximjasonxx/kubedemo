@@ -1,14 +1,6 @@
 
 import React from 'react';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
-import {
-    LineChart,
-    Line,
-    CartesianGrid,
-    XAxis,
-    YAxis
-} from 'recharts';
-import randomColor from 'randomcolor';
 
 class MainLanding extends React.Component {
     constructor(props) {
@@ -17,8 +9,7 @@ class MainLanding extends React.Component {
         this.state = {
             hubConnection: null,
             stockPrices: [],
-            stockSymbols: [],
-            lineColors: randomColor({ count: 100, hue: 'green' })
+            stockSymbols: []
         };
 
         this.handleConnectionStart = this.handleConnectionStart.bind(this);
@@ -50,7 +41,7 @@ class MainLanding extends React.Component {
 
             var symbols = this.state.stockSymbols;
             if (symbols.filter(symbol => symbol === stockPrice.symbol).length === 0) {
-                symbols = [ ...symbols, { symbol: stockPrice.symbol, color: this.state.lineColors[symbols.length] }];
+                symbols = [ ...symbols, stockPrice.symbol ];
             }
 
             this.setState({
@@ -66,14 +57,12 @@ class MainLanding extends React.Component {
         return (
             <div>
                 <h2>Stock Prices</h2>
-                <LineChart width={400} height={400}>
-                    {stockSymbols.map(symObj => {
-                        return <Line type="monotone" dataKey="price" data={stockPrices.filter(x => x.symbol === symObj.symbol)} stroke={symObj.color} />
-                    })}
-                    <CartesianGrid stroke="#ccc" />
-                    <XAxis dataKey="publishTime" />
-                    <YAxis dataKey="price" />
-                </LineChart>
+                <hr />
+                {stockSymbols.map(symbol => {
+                    return (
+                        <h3 key={symbol}>{symbol}</h3>
+                    );
+                })}
             </div>
         );
     }
