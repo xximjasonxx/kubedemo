@@ -7,6 +7,6 @@ namespace StockPriceApi.Hubs
 {
     public class StockPriceHub : Hub<IPriceChangeClient>
     {
-        public async Task SendPriceAsync(StockPrice stockPrice) => await Clients.All.ReceiveStockPrice(stockPrice);
+        public async Task SendPriceAsync(StockPriceChange stockPrice) => await Clients.All.ReceiveStockPrice(stockPrice);
     }
 }
