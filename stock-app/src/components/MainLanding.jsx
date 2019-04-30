@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
+import StockListing from './StockListing';
 
 class MainLanding extends React.Component {
     constructor(props) {
@@ -8,8 +9,7 @@ class MainLanding extends React.Component {
 
         this.state = {
             hubConnection: null,
-            stockPrices: [],
-            stockSymbols: []
+            stockPrices: {}
         };
 
         this.handleConnectionStart = this.handleConnectionStart.bind(this);
@@ -33,35 +33,22 @@ class MainLanding extends React.Component {
 
     handleConnectionStart() {
         console.log("Connection established");
-        this.state.hubConnection.on('ReceiveStockPrice', (stockPrice) => {            
-            var dataObject = {
-                symbol: stockPrice.symbol,
-                price: stockPrice.newPrice,
-                publishTime: stockPrice.publishTime };
-
-            var symbols = this.state.stockSymbols;
-            if (symbols.filter(symbol => symbol === stockPrice.symbol).length === 0) {
-                symbols = [ ...symbols, stockPrice.symbol ];
-            }
-
-            this.setState({
-                stockPrices: [ ...this.state.stockPrices, dataObject ],
-                stockSymbols: symbols
-            });
+        this.state.hubConnection.on('ReceiveStockPrice', (stockPrice) => {    
+            var newState = Object.assign(this.state.stockPrices);
+            newState[stockPrice.symbol] = stockPrice;
+            
+            this.setState(newState);
         });
     }
 
     render() {
-        const { stockPrices, stockSymbols } = this.state;
-
+        const { stockPrices } = this.state;
         return (
-            <div>
+            <div style={{ marginLeft: '20px' }}>
                 <h2>Stock Prices</h2>
                 <hr />
-                {stockSymbols.map(symbol => {
-                    return (
-                        <h3 key={symbol}>{symbol}</h3>
-                    );
+                {Object.keys(stockPrices).map((key) => {
+                    return <StockListing key={key} stockPrice={stockPrices[key]} />;
                 })}
             </div>
         );
