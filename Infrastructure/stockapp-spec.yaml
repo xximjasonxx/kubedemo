@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: stockapp-container
-          image: xximjasonxx/kubedemo-stockapp:v1.1
+          image: xximjasonxx/kubedemo-stockapp:v1.5.2
 
 ---
 
@@ -36,5 +36,5 @@ spec:
   type: NodePort
   ports:
     - protocol: TCP
-      port: 80
+      port: 8080
       nodePort: 31080

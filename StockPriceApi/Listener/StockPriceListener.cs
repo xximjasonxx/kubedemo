@@ -93,7 +93,6 @@ namespace StockPriceApi.Listener
         void HandleMessageReceive(object sender, BasicDeliverEventArgs e)
         {
             var bodyContents = Encoding.UTF8.GetString(e.Body);
-            Console.WriteLine("Publishing: " + bodyContents);
             var stockPrice = JsonConvert.DeserializeObject<StockPriceChange>(bodyContents);
 
             _stockPriceHub.Clients.All.SendAsync(nameof(IPriceChangeClient.ReceiveStockPrice), stockPrice)

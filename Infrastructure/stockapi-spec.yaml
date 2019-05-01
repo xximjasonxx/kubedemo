@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: stockapi-container
-          image: xximjasonxx/kubedemo-stockapi:v2.2
+          image: xximjasonxx/kubedemo-stockapi:v2.2.1
 
 ---
 

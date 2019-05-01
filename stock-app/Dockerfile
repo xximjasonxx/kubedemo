@@ -13,5 +13,5 @@ WORKDIR /app
 COPY --from=build /code/build ./
 RUN npm install -g serve
 
-EXPOSE 80
-ENTRYPOINT [ "serve", "-l", "80" ]
+EXPOSE 8080
+ENTRYPOINT [ "serve", "-l", "8080" ]
