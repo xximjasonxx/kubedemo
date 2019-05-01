@@ -38,3 +38,18 @@ spec:
     - protocol: TCP
       port: 80
       nodePort: 31000
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: stockapi-svc
+  namespace: kube-demo
+spec:
+  selector:
+    app: stockapi
+    type: pod
+  ports:
+    - protocol: TCP
+      port: 80

@@ -4,7 +4,7 @@ const local = {
 };
 
 const cluster = {
-    API_HOSTNAME: "http://10.101.230.79:8080"
+    API_HOSTNAME: "http://10.110.80.93"
 }
 
 const config = process.env.REACT_APP_STAGE === 'cluster' ? cluster : local;
