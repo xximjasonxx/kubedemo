@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
+import config from '../config';
 import StockListing from './StockListing';
 
 class MainLanding extends React.Component {
@@ -17,7 +18,7 @@ class MainLanding extends React.Component {
 
     componentDidMount = () => {
         const hubConnection = new HubConnectionBuilder()
-            .withUrl("http://192.168.99.100:31000/prices")
+            .withUrl(`${config.API_HOSTNAME}/prices`)
             .configureLogging(LogLevel.Information)
             .build();
 
