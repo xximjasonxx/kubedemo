@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: stockapp-container
-          image: xximjasonxx/kubedemo-stockapp:v1.5.4
+          image: xximjasonxx/kubedemo-stockapp:v1.6
 
 ---
 
