@@ -33,7 +33,8 @@ spec:
   selector:
     app: stockapi
     type: pod
-  type: LoadBalancer
+  type: NodePort
   ports:
     - protocol: TCP
       port: 80
+      nodePort: 31000

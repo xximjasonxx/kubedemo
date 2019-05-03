@@ -21,6 +21,9 @@ spec:
       containers:
         - name: stockapp-container
           image: xximjasonxx/kubedemo-stockapp:v1.6
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
 
 ---
 
@@ -33,7 +36,8 @@ spec:
   selector:
     app: stockapp
     type: pod
-  type: LoadBalancer
+  type: NodePort
   ports:
     - protocol: TCP
       port: 80
+      nodePort: 30080
