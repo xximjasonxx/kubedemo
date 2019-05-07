@@ -20,10 +20,7 @@ spec:
     spec:
       containers:
         - name: stockapp-container
-          image: xximjasonxx/kubedemo-stockapp:v1.6
-          env:
-            - name: GET_HOSTS_FROM
-              value: dns
+          image: xximjasonxx/kubedemo-stockapp:v1.7
 
 ---
 
