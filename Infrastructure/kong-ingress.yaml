@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kube-demo-ingress
+  namespace: kube-demo
+spec:
+  rules:
+  - host: api.stock.local
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: stockapi-service
+          servicePort: 80
+
+  - host: app.stock.local
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: stockapp-service
+          servicePort: 80
