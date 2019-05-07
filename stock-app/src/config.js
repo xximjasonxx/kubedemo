@@ -1,4 +1,3 @@
-
 export default {
-    API_HOSTNAME: "http://192.168.99.100:31000"
-}
+  API_HOSTNAME: "http://api.stock.local"
+};

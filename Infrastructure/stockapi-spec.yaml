@@ -33,8 +33,6 @@ spec:
   selector:
     app: stockapi
     type: pod
-  type: NodePort
   ports:
     - protocol: TCP
       port: 80
-      nodePort: 31000
